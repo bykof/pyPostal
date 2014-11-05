@@ -14,5 +14,5 @@ setup(
                'Programming Language :: Python'],
     packages=find_packages(),
     zip_safe=False,
-    requires=['huTools']
+    install_requires=['huTools']
 )
