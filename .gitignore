@@ -3,3 +3,4 @@ dist/
 pyPostal.egg-info/
 *.pyc
 testenv/
+virtualenv
