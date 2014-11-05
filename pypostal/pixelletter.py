@@ -7,7 +7,6 @@ Created by Maximillian Dornseif on 2010-08-12.
 Copyright (c) 2010 HUDORA. All rights reserved.
 """
 import re
-import logging
 import os
 import xml.etree.ElementTree as ET
 
@@ -50,7 +49,7 @@ class Pixelletter(object):
 
     def _get_auth_xml(self):
         """Create the XML root element containing auth data"""
-        root = ET.Element('pixelletter', version='1.0')
+        root = ET.Element('pixelletter', version='1.3')
         auth = ET.SubElement(root, 'auth')
         ET.SubElement(auth, 'email').text = self.username
         ET.SubElement(auth, 'password').text = self.password
@@ -66,10 +65,12 @@ class Pixelletter(object):
         data = re.sub(r'<(/?)(\w+):(\w+)', r'<\1\2_\3', data)
         tree = ET.fromstring(data)
         result = tree.find('response/result')
-        response = dict(code=result.attrib.get('code', '999'),
-                        msg=result.findtext('msg'),
-                        transaction=result.findtext('transaction'),
-                        id=result.findtext('id'))
+        response = dict(
+            code=result.attrib.get('code', '999'),
+            msg=result.findtext('msg'),
+            transaction=result.findtext('transaction'),
+            id=result.findtext('id')
+        )
         return response
 
     def get_account_info(self):
@@ -114,16 +115,11 @@ class Pixelletter(object):
         info['customer_credit'] = int(huTools.monetary.euro_to_cent(info.get('customer_credit', '0')))
         return info
 
-    def send_post(self, uploadfiles, dest_country='DE', guid='', services=None):
+    def send_post(self, uploadfiles, dest_country='DE', guid='', services=None, duplex=True):
         """
         Instructs pixelletter.de to send a letter.
 
         Send one PDF printed in color and in CO2 neutral fashion.
-
-        >>> print pix.send_post(['./Testbrief.pdf'],
-                               guid='01fe190fb6b626154bad760334907ce9',
-                               service=['green', 'color'])
-
         Uploadfiles is a list of files to be send (as a single letter). The first page must contain
         the destination Address.
 
@@ -143,6 +139,12 @@ class Pixelletter(object):
         * rueckschein
         * color
         """
+
+        if duplex:
+            duplex = ''
+        else:
+            duplex = 'NODUPLEX'
+
         if not services:
             services = ['green']
         addoption = set()
@@ -175,6 +177,7 @@ class Pixelletter(object):
         order = ET.SubElement(root, 'order', type='upload')
         options = ET.SubElement(order, 'options')
         ET.SubElement(options, 'type').text = 'upload'
+        ET.SubElement(options, 'control').text = duplex
         ET.SubElement(options, 'action').text = '1'  # Brief
         ET.SubElement(options, 'destination').text = dest_country
         ET.SubElement(options, 'transaction').text = str(guid)
