@@ -173,10 +173,9 @@ class Pixelletter(object):
                      'rueckschein', 'green', 'color']))
 
         root = self._get_auth_xml()
-
-        order = ET.SubElement(root, 'order', type='upload')
+        command = ET.SubElement(root, 'command')
+        order = ET.SubElement(command, 'order', type='upload')
         options = ET.SubElement(order, 'options')
-        ET.SubElement(options, 'type').text = 'upload'
         ET.SubElement(options, 'control').text = duplex
         ET.SubElement(options, 'action').text = '1'  # Brief
         ET.SubElement(options, 'destination').text = dest_country
